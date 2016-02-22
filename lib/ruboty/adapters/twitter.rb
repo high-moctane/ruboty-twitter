@@ -23,10 +23,10 @@ module Ruboty
       end
 
       def say(message)
-        body_length = MAX_MSG_LENGTH - random_footer.size
+        body_length = MAX_MSG_LENGTH - timestamp.size
         id          = nil
         message[:body].scan(/.{1,#{body_length}}/m).each do |body|
-          status = client.update(repry_header + body + random_footer, in_reply_to_status_id: id)
+          status = client.update(timestamp + body, in_reply_to_status_id: id)
           id = status.id
           sleep 0.2
         end
@@ -88,8 +88,8 @@ module Ruboty
         Thread.abort_on_exception = true
       end
 
-      def random_footer
-        " #{[*0..9].sample(3).join}"
+      def timestamp
+        "[#{Time.now.strftime "%y-%m-%d %R:%S.%L"}]\n"
       end
     end
   end
