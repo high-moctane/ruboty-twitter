@@ -7,6 +7,8 @@ module Ruboty
     class Twitter < Base
       include Mem
 
+      MAX_MSG_LENGTH = 140
+
       env :TWITTER_ACCESS_TOKEN, "Twitter access token"
       env :TWITTER_ACCESS_TOKEN_SECRET, "Twitter access token secret"
       env :TWITTER_AUTO_FOLLOW_BACK, "Pass 1 to follow back followers (optional)", optional: true
@@ -21,7 +23,16 @@ module Ruboty
       end
 
       def say(message)
-        client.update(message[:body], in_reply_to_status_id: message[:original][:tweet].try(:id))
+        id           = message[:original][:tweet].try(:id)
+        repry_header = message[:to].nil? ? "" : "@#{message[:to]}\n"
+        body_length  = MAX_MSG_LENGTH - repry_header.size - random_footer.size
+        message[:body].scan(/.{1,#{body_length}}/).each do |body|
+          status = client.update(repry_header + body + random_footer, in_reply_to_status_id: id)
+          id = status.id
+          sleep 0.2
+        end
+      rescue => e
+        Ruboty.logger.error("Twitter post error: #{e.message}")
       end
 
       private
@@ -76,6 +87,10 @@ module Ruboty
 
       def abortable
         Thread.abort_on_exception = true
+      end
+
+      def random_footer
+        " #{[*0..9].sample(3).join}"
       end
     end
   end
