@@ -26,7 +26,7 @@ module Ruboty
         id           = message[:original][:tweet].try(:id)
         repry_header = message[:to].nil? ? "" : "@#{message[:to]}\n"
         body_length  = MAX_MSG_LENGTH - repry_header.size - random_footer.size
-        message[:body].scan(/.{1,#{body_length}}/).each do |body|
+        message[:body].scan(/.{1,#{body_length}}/m).each do |body|
           status = client.update(repry_header + body + random_footer, in_reply_to_status_id: id)
           id = status.id
           sleep 0.2
