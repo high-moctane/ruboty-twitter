@@ -62,6 +62,13 @@ module Ruboty
             end
           end
         end
+      rescue => e
+        Ruboty.logger.error(e.message)
+        sleep 10
+        retry_time ||= []
+        retry_time << Time.now
+        retry_time.delete_if { |item| item < Time.now - 10 * 60 }
+        retry if retry_time.size <= 10
       end
 
       def client
