@@ -24,7 +24,7 @@ module Ruboty
 
       def say(message)
         body_length = MAX_MSG_LENGTH - timestamp.size
-        id          = nil
+        id          = message[:original][:tweet].try(:id)
         message[:body].scan(/.{1,#{body_length}}/m).each do |body|
           status = client.update(timestamp + body, in_reply_to_status_id: id)
           id = status.id
